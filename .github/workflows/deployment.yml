@@ -1,15 +1,22 @@
 name: Deploy to the Dev Environment
 
+# comment
 on:
   workflow_call:
     inputs:
       deploy-github-env:
         required: true
         type: string
+      deploy-env:
+        required: true
+        type: string
       aws-region:
         required: false
         type: string
         default: "ap-southeast-2"
+      account-id:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       deploy-github-env:
