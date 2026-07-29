@@ -7,6 +7,9 @@ on:
       deploy-github-env:
         required: true
         type: string
+      deploy-env:
+        required: true
+        type: string
       aws-region:
         required: false
         type: string
