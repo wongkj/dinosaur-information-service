@@ -8,7 +8,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const api = new APIGatewayConstruct(this, "file-reader-api", {});
+    const api = new APIGatewayConstruct(this, "dinosaur-info-api", {});
     const getDinoInfoApi = api.returnApi();
 
     const helloWorldLambda = new LambdaConstruct(this, "hello-world-lambda", {
