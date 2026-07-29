@@ -12,12 +12,16 @@ export async function handler(
 ): Promise<APIGatewayProxyResult> {
   if (event.httpMethod !== "GET")
     throw new BadRequestError("Request needs to be GET method.");
-  if (!event || !event.body)
-    throw new BadRequestError("A Request body was not provided.");
-
-  const { body } = event;
-
-  console.log(`body: ${JSON.stringify(body, null, 2)}`);
+  console.log(
+    `request: ${JSON.stringify(
+      {
+        path: event.path,
+        queryStringParameters: event.queryStringParameters,
+      },
+      null,
+      2,
+    )}`,
+  );
 
   return {
     statusCode: 200,

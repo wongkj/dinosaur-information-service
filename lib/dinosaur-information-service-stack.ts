@@ -1,5 +1,6 @@
 import * as path from "node:path";
 import * as cdk from "aws-cdk-lib";
+import { LambdaIntegration } from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 import APIGatewayConstruct from "./constructs/APIGatewayConstruct";
 import { LambdaConstruct } from "./constructs/LambdaConstruct";
@@ -21,12 +22,25 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       apiMethod: "GET",
     }).returnLambda();
 
+    getDinoInfoApi.root.addMethod(
+      "GET",
+      new LambdaIntegration(helloWorldLambda),
+    );
+
     new cdk.CfnOutput(this, "HelloWorldLambdaName", {
       value: helloWorldLambda.functionName,
     });
 
     new cdk.CfnOutput(this, "HelloWorldLambdaArn", {
       value: helloWorldLambda.functionArn,
+    });
+
+    new cdk.CfnOutput(this, "ApiBaseUrl", {
+      value: getDinoInfoApi.url,
+    });
+
+    new cdk.CfnOutput(this, "HelloWorldApiUrl", {
+      value: `${getDinoInfoApi.url}hello-world`,
     });
   }
 }
