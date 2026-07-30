@@ -1,4 +1,9 @@
-import { RestApi } from "aws-cdk-lib/aws-apigateway";
+import {
+  AuthorizationType,
+  Cors,
+  EndpointType,
+  RestApi,
+} from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -11,7 +16,19 @@ export default class APIGatewayConstruct extends Construct {
   constructor(scope: Construct, id: string, props: CustomAPIGatewayProps) {
     super(scope, id);
 
-    this.api = new RestApi(this, id);
+    this.api = new RestApi(this, id, {
+      defaultCorsPreflightOptions: {
+        allowHeaders: Cors.DEFAULT_HEADERS,
+        allowMethods: ["GET", "OPTIONS"],
+        allowOrigins: Cors.ALL_ORIGINS,
+      },
+      defaultMethodOptions: {
+        authorizationType: AuthorizationType.NONE,
+      },
+      endpointConfiguration: {
+        types: [EndpointType.REGIONAL],
+      },
+    });
   }
 
   public returnApi() {
