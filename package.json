@@ -25,6 +25,7 @@
   "dependencies": {
     "@types/aws-lambda": "^8.10.162",
     "aws-cdk-lib": "^2.262.0",
+    "esbuild": "^0.25.9",
     "constructs": "^10.5.0"
   }
 }

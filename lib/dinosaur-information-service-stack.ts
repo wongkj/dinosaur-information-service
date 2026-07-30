@@ -14,8 +14,8 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
 
     const helloWorldLambda = new LambdaConstruct(this, "hello-world-lambda", {
       functionName: "hello-world-lambda",
-      codePath: path.join(__dirname, "handlers"),
-      handler: "hello-world.handler",
+      entry: path.join(__dirname, "handlers", "hello-world.ts"),
+      handler: "handler",
       description: "Returns dinosaur information.",
       api: getDinoInfoApi,
       apiResource: "hello-world",

@@ -1,12 +1,13 @@
 import { Duration } from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as cdk from "aws-cdk-lib";
 
 export interface LambdaConstructProps {
   functionName: string;
-  codePath: string;
+  entry: string;
   description?: string;
   environment?: Record<string, string>;
   handler?: string;
@@ -19,16 +20,16 @@ export interface LambdaConstructProps {
 }
 
 export class LambdaConstruct extends Construct {
-  public readonly function: lambda.Function;
+  public readonly function: NodejsFunction;
 
   constructor(scope: Construct, id: string, props: LambdaConstructProps) {
     super(scope, id);
 
-    this.function = new lambda.Function(this, "Function", {
+    this.function = new NodejsFunction(this, "Function", {
       functionName: props.functionName,
       description: props.description,
       runtime: props.runtime ?? lambda.Runtime.NODEJS_22_X,
-      code: lambda.Code.fromAsset(props.codePath),
+      entry: props.entry,
       handler: props.handler ?? "index.handler",
       environment: props.environment,
       memorySize: props.memorySize ?? 256,
