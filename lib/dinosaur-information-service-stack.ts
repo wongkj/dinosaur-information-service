@@ -1,16 +1,46 @@
-import * as cdk from 'aws-cdk-lib/core';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as path from "node:path";
+import * as cdk from "aws-cdk-lib";
+import { LambdaIntegration } from "aws-cdk-lib/aws-apigateway";
+import { Construct } from "constructs";
+import APIGatewayConstruct from "./constructs/APIGatewayConstruct";
+import { LambdaConstruct } from "./constructs/LambdaConstruct";
 
 export class DinosaurInformationServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const api = new APIGatewayConstruct(this, "dinosaur-info-api", {});
+    const getDinoInfoApi = api.returnApi();
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'DinosaurInformationServiceQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const helloWorldLambda = new LambdaConstruct(this, "hello-world-lambda", {
+      functionName: "hello-world-lambda",
+      entry: path.join(__dirname, "handlers", "hello-world.ts"),
+      handler: "handler",
+      description: "Returns dinosaur information.",
+      api: getDinoInfoApi,
+      apiResource: "hello-world",
+      apiMethod: "GET",
+    }).returnLambda();
+
+    getDinoInfoApi.root.addMethod(
+      "GET",
+      new LambdaIntegration(helloWorldLambda),
+    );
+
+    new cdk.CfnOutput(this, "HelloWorldLambdaName", {
+      value: helloWorldLambda.functionName,
+    });
+
+    new cdk.CfnOutput(this, "HelloWorldLambdaArn", {
+      value: helloWorldLambda.functionArn,
+    });
+
+    new cdk.CfnOutput(this, "ApiBaseUrl", {
+      value: getDinoInfoApi.url,
+    });
+
+    new cdk.CfnOutput(this, "HelloWorldApiUrl", {
+      value: `${getDinoInfoApi.url}hello-world`,
+    });
   }
 }
