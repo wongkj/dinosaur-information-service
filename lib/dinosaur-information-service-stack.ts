@@ -46,6 +46,9 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
         entry: path.join(__dirname, "handlers", "dinosaur-information.ts"),
         handler: "handler",
         description: "Returns dinosaur information.",
+        environment: {
+          DINO_DATA_BUCKET: dinosaurDataBucket.bucketName,
+        },
         api: getDinoInfoApi,
         apiResource: "dinosaur-information",
         apiMethod: "GET",
@@ -77,6 +80,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
     );
 
     dinosaurInformationLambda.grantInvoke(dinosaurInformationScheduleRole);
+    dinosaurDataBucket.grantReadWrite(dinosaurInformationLambda);
 
     const dinosaurInformationSchedule = new scheduler.CfnSchedule(
       this,
