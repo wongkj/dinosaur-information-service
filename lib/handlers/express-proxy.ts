@@ -24,7 +24,7 @@ app.get("/good-bye-world", (_request: Request, response: Response) => {
   });
 });
 
-app.all("*", (request: Request, response: Response) => {
+app.all("/*path", (request: Request, response: Response) => {
   response.json({
     headers: request.headers,
     method: request.method,
