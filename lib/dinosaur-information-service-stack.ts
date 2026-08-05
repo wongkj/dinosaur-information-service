@@ -26,6 +26,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
 
     const dinosaurDataBucket = new s3.Bucket(this, "dinosaur-data-bucket", {
       bucketName: dinosaurDataBucketName,
+      versioned: true,
     });
 
     const helloWorldLambda = new LambdaConstruct(this, "hello-world-lambda", {

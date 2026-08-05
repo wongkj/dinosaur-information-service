@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
@@ -12,6 +13,24 @@ const PALEO_BIO_DB_URL = "https://paleobiodb.org";
 const OUTPUT_FILE_NAME = "pbdb_all_occurrences.csv";
 
 const s3Client = new S3Client({});
+
+function toReadableStream(streamBody: unknown): Readable {
+  if (streamBody instanceof Readable) {
+    return streamBody;
+  }
+
+  return Readable.fromWeb(streamBody as globalThis.ReadableStream);
+}
+
+async function readableToBuffer(streamBody: Readable): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+
+  for await (const chunk of streamBody) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+
+  return Buffer.concat(chunks);
+}
 
 async function fetchAndStoreDinosaurData() {
   const bucketName = process.env.DINO_DATA_BUCKET;
@@ -34,7 +53,8 @@ async function fetchAndStoreDinosaurData() {
     throw new Error("PaleoBioDB response did not include a body stream.");
   }
 
-  const responseBody = Buffer.from(await response.arrayBuffer());
+  const responseBodyStream = toReadableStream(response.body);
+  const responseBody = await readableToBuffer(responseBodyStream);
 
   await s3Client.send(
     new PutObjectCommand({
