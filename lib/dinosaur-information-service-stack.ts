@@ -11,6 +11,10 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const dinosaurInformationScheduleExpression = String(
+      process.env.DINO_INFO_SCHEDULE ?? "cron(30 5 * * ? *)",
+    );
+
     const api = new APIGatewayConstruct(this, "dinosaur-info-api", {});
     const getDinoInfoApi = api.returnApi();
 
@@ -71,7 +75,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
         flexibleTimeWindow: {
           mode: "OFF",
         },
-        scheduleExpression: "cron(30 5 * * ? *)",
+        scheduleExpression: dinosaurInformationScheduleExpression,
         scheduleExpressionTimezone: "Australia/Melbourne",
         target: {
           arn: dinosaurInformationLambda.functionArn,
