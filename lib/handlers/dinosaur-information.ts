@@ -35,11 +35,14 @@ async function fetchAndStoreDinosaurData() {
     throw new Error("PaleoBioDB response did not include a body stream.");
   }
 
+  const responseBodyStream =
+    response.body instanceof Readable
+      ? response.body
+      : Readable.fromWeb(response.body as unknown as globalThis.ReadableStream);
+
   await s3Client.send(
     new PutObjectCommand({
-      Body: Readable.fromWeb(
-        response.body as unknown as globalThis.ReadableStream,
-      ),
+      Body: responseBodyStream,
       Bucket: bucketName,
       ContentType:
         response.headers.get("content-type") ?? "text/csv; charset=utf-8",
