@@ -38,7 +38,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       new LambdaIntegration(helloWorldLambda),
     );
 
-    const expressResource = getDinoInfoApi.root.addResource("/api");
+    const expressResource = getDinoInfoApi.root.addResource("api");
     const expressIntegration = new LambdaIntegration(expressProxyLambda);
 
     expressResource.addMethod("ANY", expressIntegration);
@@ -72,7 +72,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, "ExpressProxyApiUrl", {
-      value: `${getDinoInfoApi.url}express`,
+      value: `${getDinoInfoApi.url}api`,
     });
   }
 }
