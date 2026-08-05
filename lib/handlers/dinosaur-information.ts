@@ -1,4 +1,3 @@
-import { Readable } from "node:stream";
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
@@ -35,15 +34,13 @@ async function fetchAndStoreDinosaurData() {
     throw new Error("PaleoBioDB response did not include a body stream.");
   }
 
-  const responseBodyStream =
-    response.body instanceof Readable
-      ? response.body
-      : Readable.fromWeb(response.body as unknown as globalThis.ReadableStream);
+  const responseBody = Buffer.from(await response.arrayBuffer());
 
   await s3Client.send(
     new PutObjectCommand({
-      Body: responseBodyStream,
+      Body: responseBody,
       Bucket: bucketName,
+      ContentLength: responseBody.byteLength,
       ContentType:
         response.headers.get("content-type") ?? "text/csv; charset=utf-8",
       Key: OUTPUT_FILE_NAME,
