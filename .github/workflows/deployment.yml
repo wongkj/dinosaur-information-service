@@ -60,6 +60,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, test]
     environment: ${{ inputs.deploy-github-env || github.event.inputs.deploy-github-env }}
+    env:
+      DINO_INFO_SCHEDULE: ${{ vars.DINO_INFO_SCHEDULE }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -68,6 +70,10 @@ jobs:
           if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
             echo "Missing AWS credentials secrets."
             echo "Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as repository secrets or in the selected GitHub environment."
+            exit 1
+          fi
+          if [ -z "$DINO_INFO_SCHEDULE" ]; then
+            echo "Missing DINO_INFO_SCHEDULE variable in the selected GitHub environment."
             exit 1
           fi
       - name: Configure AWS Credentials
