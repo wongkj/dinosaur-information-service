@@ -23,6 +23,11 @@ on:
         description: "GitHub environment to deploy to"
         required: true
         type: environment
+      deploy-env:
+        description: "Stage name prefix to use for deployed resources"
+        required: false
+        type: string
+        default: "dev"
       aws-region:
         description: "AWS region to deploy to"
         required: false
@@ -62,6 +67,8 @@ jobs:
     environment: ${{ inputs.deploy-github-env || github.event.inputs.deploy-github-env }}
     env:
       DINO_INFO_SCHEDULE: ${{ vars.DINO_INFO_SCHEDULE }}
+      DINO_DATA_BUCKET: ${{ vars.DINO_DATA_BUCKET }}
+      STAGE: ${{ inputs.deploy-env || github.event.inputs.deploy-env || 'dev' }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -74,6 +81,14 @@ jobs:
           fi
           if [ -z "$DINO_INFO_SCHEDULE" ]; then
             echo "Missing DINO_INFO_SCHEDULE variable in the selected GitHub environment."
+            exit 1
+          fi
+          if [ -z "$DINO_DATA_BUCKET" ]; then
+            echo "Missing DINO_DATA_BUCKET variable in the selected GitHub environment."
+            exit 1
+          fi
+          if [ -z "$STAGE" ]; then
+            echo "Missing STAGE value for the deployment."
             exit 1
           fi
       - name: Configure AWS Credentials
