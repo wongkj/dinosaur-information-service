@@ -22,10 +22,30 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       apiMethod: "GET",
     }).returnLambda();
 
+    const expressProxyLambda = new LambdaConstruct(
+      this,
+      "express-proxy-lambda",
+      {
+        functionName: "express-proxy-lambda",
+        entry: path.join(__dirname, "handlers", "express-proxy.ts"),
+        handler: "handler",
+        description: "Proxies requests to an Express application.",
+      },
+    ).returnLambda();
+
     getDinoInfoApi.root.addMethod(
       "GET",
       new LambdaIntegration(helloWorldLambda),
     );
+
+    const expressResource = getDinoInfoApi.root.addResource("express");
+    const expressIntegration = new LambdaIntegration(expressProxyLambda);
+
+    expressResource.addMethod("ANY", expressIntegration);
+    expressResource.addProxy({
+      anyMethod: true,
+      defaultIntegration: expressIntegration,
+    });
 
     new cdk.CfnOutput(this, "HelloWorldLambdaName", {
       value: helloWorldLambda.functionName,
@@ -35,12 +55,24 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       value: helloWorldLambda.functionArn,
     });
 
+    new cdk.CfnOutput(this, "ExpressProxyLambdaName", {
+      value: expressProxyLambda.functionName,
+    });
+
+    new cdk.CfnOutput(this, "ExpressProxyLambdaArn", {
+      value: expressProxyLambda.functionArn,
+    });
+
     new cdk.CfnOutput(this, "ApiBaseUrl", {
       value: getDinoInfoApi.url,
     });
 
     new cdk.CfnOutput(this, "HelloWorldApiUrl", {
       value: `${getDinoInfoApi.url}hello-world`,
+    });
+
+    new cdk.CfnOutput(this, "ExpressProxyApiUrl", {
+      value: `${getDinoInfoApi.url}express`,
     });
   }
 }

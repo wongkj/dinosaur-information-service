@@ -19,7 +19,7 @@ export default class APIGatewayConstruct extends Construct {
     this.api = new RestApi(this, id, {
       defaultCorsPreflightOptions: {
         allowHeaders: Cors.DEFAULT_HEADERS,
-        allowMethods: ["GET", "OPTIONS"],
+        allowMethods: Cors.ALL_METHODS,
         allowOrigins: Cors.ALL_ORIGINS,
       },
       defaultMethodOptions: {
