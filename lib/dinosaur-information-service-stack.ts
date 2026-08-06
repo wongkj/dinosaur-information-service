@@ -26,6 +26,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
 
     const dinosaurDataBucket = new s3.Bucket(this, "dinosaur-data-bucket", {
       bucketName: dinosaurDataBucketName,
+      versioned: true,
     });
 
     const helloWorldLambda = new LambdaConstruct(this, "hello-world-lambda", {
@@ -46,6 +47,11 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
         entry: path.join(__dirname, "handlers", "dinosaur-information.ts"),
         handler: "handler",
         description: "Returns dinosaur information.",
+        environment: {
+          DINO_DATA_BUCKET: dinosaurDataBucket.bucketName,
+        },
+        memorySize: 1024,
+        timeout: cdk.Duration.minutes(15),
         api: getDinoInfoApi,
         apiResource: "dinosaur-information",
         apiMethod: "GET",
@@ -77,6 +83,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
     );
 
     dinosaurInformationLambda.grantInvoke(dinosaurInformationScheduleRole);
+    dinosaurDataBucket.grantReadWrite(dinosaurInformationLambda);
 
     const dinosaurInformationSchedule = new scheduler.CfnSchedule(
       this,
