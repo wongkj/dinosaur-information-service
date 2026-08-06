@@ -50,6 +50,8 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
         environment: {
           DINO_DATA_BUCKET: dinosaurDataBucket.bucketName,
         },
+        memorySize: 1024,
+        timeout: cdk.Duration.minutes(15),
         api: getDinoInfoApi,
         apiResource: "dinosaur-information",
         apiMethod: "GET",
