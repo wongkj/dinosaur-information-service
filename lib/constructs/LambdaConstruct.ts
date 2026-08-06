@@ -1,6 +1,7 @@
 import { Duration } from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
+import * as logs from "aws-cdk-lib/aws-logs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as cdk from "aws-cdk-lib";
@@ -25,6 +26,12 @@ export class LambdaConstruct extends Construct {
   constructor(scope: Construct, id: string, props: LambdaConstructProps) {
     super(scope, id);
 
+    const functionLogGroup = logs.LogGroup.fromLogGroupName(
+      this,
+      "FunctionLogGroup",
+      `/aws/lambda/${props.functionName}`,
+    );
+
     this.function = new NodejsFunction(this, "Function", {
       functionName: props.functionName,
       description: props.description,
@@ -32,6 +39,7 @@ export class LambdaConstruct extends Construct {
       entry: props.entry,
       handler: props.handler ?? "index.handler",
       environment: props.environment,
+      logGroup: functionLogGroup,
       memorySize: props.memorySize ?? 256,
       timeout: props.timeout ?? Duration.seconds(30),
     });
