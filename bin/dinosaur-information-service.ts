@@ -17,9 +17,15 @@ const stackProps: cdk.StackProps = {
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 };
 
-new DinosaurInformationServiceStack(
+const dinosaurInformationServiceStack = new DinosaurInformationServiceStack(
   app,
   "DinosaurInformationServiceStack",
   stackProps,
 );
-new ExpressProxyStack(app, "ExpressProxyStack", stackProps);
+const expressProxyStack = new ExpressProxyStack(
+  app,
+  "ExpressProxyStack",
+  stackProps,
+);
+
+expressProxyStack.addStackDependency(dinosaurInformationServiceStack);
