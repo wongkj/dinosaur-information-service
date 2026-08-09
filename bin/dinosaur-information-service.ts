@@ -30,9 +30,7 @@ const expressProxyStack = new ExpressProxyStack(app, "ExpressProxyStack", {
   databaseName: dinosaurInformationServiceStack.databaseName,
   databaseReadHost:
     dinosaurInformationServiceStack.mysqlReadReplica.dbInstanceEndpointAddress,
+  lambdaSecurityGroup: dinosaurInformationServiceStack.applicationSecurityGroup,
   databaseSecret: dinosaurInformationServiceStack.databaseSecret,
-  databaseSecurityGroup: dinosaurInformationServiceStack.databaseSecurityGroup,
   vpc: dinosaurInformationServiceStack.vpc,
 });
-
-expressProxyStack.addStackDependency(dinosaurInformationServiceStack);

@@ -12,6 +12,7 @@ import APIGatewayConstruct from "./constructs/APIGatewayConstruct";
 import { LambdaConstruct } from "./constructs/LambdaConstruct";
 
 export class DinosaurInformationServiceStack extends cdk.Stack {
+  public readonly applicationSecurityGroup: ec2.SecurityGroup;
   public readonly databaseName: string;
   public readonly databaseSecurityGroup: ec2.SecurityGroup;
   public readonly databaseSecret: secretsmanager.ISecret;
@@ -55,6 +56,23 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
         description: "Security group for dinosaur MySQL RDS instances.",
         allowAllOutbound: true,
       },
+    );
+
+    this.applicationSecurityGroup = new ec2.SecurityGroup(
+      this,
+      "dinosaur-application-security-group",
+      {
+        vpc: this.vpc,
+        description:
+          "Security group for application Lambdas that access MySQL.",
+        allowAllOutbound: true,
+      },
+    );
+
+    this.databaseSecurityGroup.addIngressRule(
+      this.applicationSecurityGroup,
+      ec2.Port.tcp(3306),
+      "Allow application Lambdas to connect to MySQL.",
     );
 
     const databaseSubnetGroup = new rds.SubnetGroup(

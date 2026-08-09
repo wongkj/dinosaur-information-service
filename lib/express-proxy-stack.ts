@@ -11,8 +11,8 @@ interface ExpressProxyStackProps extends cdk.StackProps {
   databaseHost: string;
   databaseName: string;
   databaseReadHost: string;
+  lambdaSecurityGroup: ec2.ISecurityGroup;
   databaseSecret: secretsmanager.ISecret;
-  databaseSecurityGroup: ec2.ISecurityGroup;
   vpc: ec2.IVpc;
 }
 
@@ -22,16 +22,6 @@ export class ExpressProxyStack extends cdk.Stack {
 
     const api = new APIGatewayConstruct(this, "express-proxy-api", {});
     const expressApi = api.returnApi();
-
-    const expressProxyLambdaSecurityGroup = new ec2.SecurityGroup(
-      this,
-      "express-proxy-lambda-security-group",
-      {
-        vpc: props.vpc,
-        description: "Security group for the Express proxy Lambda.",
-        allowAllOutbound: true,
-      },
-    );
 
     const expressProxyLambda = new LambdaConstruct(
       this,
@@ -48,19 +38,13 @@ export class ExpressProxyStack extends cdk.Stack {
           DATABASE_READ_HOST: props.databaseReadHost,
           DATABASE_SECRET_ARN: props.databaseSecret.secretArn,
         },
-        securityGroups: [expressProxyLambdaSecurityGroup],
+        securityGroups: [props.lambdaSecurityGroup],
         vpc: props.vpc,
         vpcSubnets: {
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         },
       },
     ).returnLambda();
-
-    props.databaseSecurityGroup.addIngressRule(
-      expressProxyLambdaSecurityGroup,
-      ec2.Port.tcp(3306),
-      "Allow the Express proxy Lambda to connect to MySQL.",
-    );
 
     props.databaseSecret.grantRead(expressProxyLambda);
 
