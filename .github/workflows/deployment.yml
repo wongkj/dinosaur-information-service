@@ -72,6 +72,21 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Detect new Drizzle migrations
+        id: detect_drizzle_migrations
+        run: |
+          added_migrations=$(git diff-tree --root --name-status --no-commit-id -r HEAD -- 'drizzle/*.sql' | awk '$1 == "A" { print $2 }')
+
+          if [ -n "$added_migrations" ]; then
+            echo "has_new_migration=true" >> "$GITHUB_OUTPUT"
+            echo "Detected new Drizzle migration files:"
+            echo "$added_migrations"
+          else
+            echo "has_new_migration=false" >> "$GITHUB_OUTPUT"
+            echo "No new Drizzle migration files detected in the current commit."
+          fi
       - name: Validate AWS secrets
         run: |
           if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
@@ -118,3 +133,14 @@ jobs:
           cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION
       - name: CDK Deploy
         run: cdk deploy --all --require-approval never
+      - name: Run Drizzle migrations
+        if: steps.detect_drizzle_migrations.outputs.has_new_migration == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "Missing DATABASE_URL secret in the selected GitHub environment."
+            exit 1
+          fi
+
+          npm run db:migrate
