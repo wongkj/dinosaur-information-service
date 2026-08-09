@@ -17,6 +17,7 @@
     "@types/jest": "^30",
     "@types/node": "^24.10.1",
     "aws-cdk": "2.1133.0",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^10.8.0",
     "jest": "^30",
     "tsx": "^4.23.0",
@@ -24,14 +25,17 @@
     "typescript-eslint": "^8.65.0"
   },
   "dependencies": {
-    "@codegenie/serverless-express": "^4.17.0",
     "@aws-sdk/client-s3": "^3.888.0",
+    "@aws-sdk/client-secrets-manager": "^3.1106.0",
     "@aws-sdk/lib-storage": "^3.888.0",
+    "@codegenie/serverless-express": "^4.17.0",
     "@types/aws-lambda": "^8.10.162",
-    "axios": "^1.12.1",
     "aws-cdk-lib": "^2.262.0",
+    "axios": "^1.12.1",
     "constructs": "^10.5.0",
+    "drizzle-orm": "^0.45.2",
     "esbuild": "^0.25.9",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mysql2": "^3.23.2"
   }
 }
