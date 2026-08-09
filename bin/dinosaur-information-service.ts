@@ -22,7 +22,7 @@ const dinosaurInformationServiceStack = new DinosaurInformationServiceStack(
   "DinosaurInformationServiceStack",
   stackProps,
 );
-const expressProxyStack = new ExpressProxyStack(app, "ExpressProxyStack", {
+new ExpressProxyStack(app, "ExpressProxyStack", {
   ...stackProps,
   databaseHost:
     dinosaurInformationServiceStack.mysqlPrimaryInstance
