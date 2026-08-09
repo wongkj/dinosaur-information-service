@@ -1,0 +1,173 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "id": "c5a5d876-9990-48fa-a557-7aac93aa06b5",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "dino_data": {
+      "name": "dino_data",
+      "columns": {
+        "occurrence_no": {
+          "name": "occurrence_no",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "record_type": {
+          "name": "record_type",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reid_no": {
+          "name": "reid_no",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "flags": {
+          "name": "flags",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "collection_no": {
+          "name": "collection_no",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "identified_name": {
+          "name": "identified_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "identified_rank": {
+          "name": "identified_rank",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "identified_no": {
+          "name": "identified_no",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "difference": {
+          "name": "difference",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "accepted_name": {
+          "name": "accepted_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "accepted_rank": {
+          "name": "accepted_rank",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "accepted_no": {
+          "name": "accepted_no",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "early_interval": {
+          "name": "early_interval",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "late_interval": {
+          "name": "late_interval",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "max_ma": {
+          "name": "max_ma",
+          "type": "decimal(7,3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "min_ma": {
+          "name": "min_ma",
+          "type": "decimal(7,3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reference_no": {
+          "name": "reference_no",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "dino_data_collection_no_idx": {
+          "name": "dino_data_collection_no_idx",
+          "columns": ["collection_no"],
+          "isUnique": false
+        },
+        "dino_data_accepted_no_idx": {
+          "name": "dino_data_accepted_no_idx",
+          "columns": ["accepted_no"],
+          "isUnique": false
+        },
+        "dino_data_reference_no_idx": {
+          "name": "dino_data_reference_no_idx",
+          "columns": ["reference_no"],
+          "isUnique": false
+        },
+        "dino_data_identification_idx": {
+          "name": "dino_data_identification_idx",
+          "columns": ["identified_name", "accepted_name"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "dino_data_occurrence_no": {
+          "name": "dino_data_occurrence_no",
+          "columns": ["occurrence_no"]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {},
+    "indexes": {}
+  }
+}
