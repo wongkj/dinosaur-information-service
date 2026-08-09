@@ -6,11 +6,19 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as scheduler from "aws-cdk-lib/aws-scheduler";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { Construct } from "constructs";
 import APIGatewayConstruct from "./constructs/APIGatewayConstruct";
 import { LambdaConstruct } from "./constructs/LambdaConstruct";
 
 export class DinosaurInformationServiceStack extends cdk.Stack {
+  public readonly databaseName: string;
+  public readonly databaseSecurityGroup: ec2.SecurityGroup;
+  public readonly databaseSecret: secretsmanager.ISecret;
+  public readonly mysqlPrimaryInstance: rds.DatabaseInstance;
+  public readonly mysqlReadReplica: rds.DatabaseInstanceReadReplica;
+  public readonly vpc: ec2.Vpc;
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -22,9 +30,9 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       process.env.DINO_DATA_BUCKET ?? "dino-data",
     ).toLowerCase();
     const dinosaurDataBucketName = `${stage}-${dinosaurDataBucketBaseName}`;
-    const databaseName = "dinosaurinformation";
+    this.databaseName = "dinosaurinformation";
 
-    const vpc = new ec2.Vpc(this, "dinosaur-service-vpc", {
+    this.vpc = new ec2.Vpc(this, "dinosaur-service-vpc", {
       maxAzs: 2,
       natGateways: 1,
       subnetConfiguration: [
@@ -39,11 +47,11 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       ],
     });
 
-    const databaseSecurityGroup = new ec2.SecurityGroup(
+    this.databaseSecurityGroup = new ec2.SecurityGroup(
       this,
       "dinosaur-database-security-group",
       {
-        vpc,
+        vpc: this.vpc,
         description: "Security group for dinosaur MySQL RDS instances.",
         allowAllOutbound: true,
       },
@@ -54,14 +62,14 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       "dinosaur-database-subnet-group",
       {
         description: "Subnet group for dinosaur MySQL RDS instances.",
-        vpc,
+        vpc: this.vpc,
         vpcSubnets: {
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         },
       },
     );
 
-    const mysqlPrimaryInstance = new rds.DatabaseInstance(
+    this.mysqlPrimaryInstance = new rds.DatabaseInstance(
       this,
       "dinosaur-mysql-primary",
       {
@@ -72,14 +80,14 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
           ec2.InstanceClass.T3,
           ec2.InstanceSize.MICRO,
         ),
-        vpc,
+        vpc: this.vpc,
         subnetGroup: databaseSubnetGroup,
         vpcSubnets: {
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         },
-        securityGroups: [databaseSecurityGroup],
+        securityGroups: [this.databaseSecurityGroup],
         credentials: rds.Credentials.fromGeneratedSecret("admin"),
-        databaseName,
+        databaseName: this.databaseName,
         multiAz: false,
         allocatedStorage: 20,
         maxAllocatedStorage: 100,
@@ -91,21 +99,27 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       },
     );
 
-    const mysqlReadReplica = new rds.DatabaseInstanceReadReplica(
+    if (!this.mysqlPrimaryInstance.secret) {
+      throw new Error("Expected the MySQL primary instance to have a secret.");
+    }
+
+    this.databaseSecret = this.mysqlPrimaryInstance.secret;
+
+    this.mysqlReadReplica = new rds.DatabaseInstanceReadReplica(
       this,
       "dinosaur-mysql-read-replica",
       {
-        sourceDatabaseInstance: mysqlPrimaryInstance,
+        sourceDatabaseInstance: this.mysqlPrimaryInstance,
         instanceType: ec2.InstanceType.of(
           ec2.InstanceClass.T3,
           ec2.InstanceSize.MICRO,
         ),
-        vpc,
+        vpc: this.vpc,
         subnetGroup: databaseSubnetGroup,
         vpcSubnets: {
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         },
-        securityGroups: [databaseSecurityGroup],
+        securityGroups: [this.databaseSecurityGroup],
         publiclyAccessible: false,
         deletionProtection: false,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -213,30 +227,28 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, "MysqlPrimaryEndpointAddress", {
-      value: mysqlPrimaryInstance.dbInstanceEndpointAddress,
+      value: this.mysqlPrimaryInstance.dbInstanceEndpointAddress,
     });
 
     new cdk.CfnOutput(this, "MysqlPrimaryEndpointPort", {
-      value: mysqlPrimaryInstance.dbInstanceEndpointPort,
+      value: this.mysqlPrimaryInstance.dbInstanceEndpointPort,
     });
 
     new cdk.CfnOutput(this, "MysqlReadReplicaEndpointAddress", {
-      value: mysqlReadReplica.dbInstanceEndpointAddress,
+      value: this.mysqlReadReplica.dbInstanceEndpointAddress,
     });
 
     new cdk.CfnOutput(this, "MysqlReadReplicaEndpointPort", {
-      value: mysqlReadReplica.dbInstanceEndpointPort,
+      value: this.mysqlReadReplica.dbInstanceEndpointPort,
     });
 
     new cdk.CfnOutput(this, "MysqlDatabaseName", {
-      value: databaseName,
+      value: this.databaseName,
     });
 
-    if (mysqlPrimaryInstance.secret) {
-      new cdk.CfnOutput(this, "MysqlCredentialsSecretArn", {
-        value: mysqlPrimaryInstance.secret.secretArn,
-      });
-    }
+    new cdk.CfnOutput(this, "MysqlCredentialsSecretArn", {
+      value: this.databaseSecret.secretArn,
+    });
 
     new cdk.CfnOutput(this, "ApiBaseUrl", {
       value: getDinoInfoApi.url,

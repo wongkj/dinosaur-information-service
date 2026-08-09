@@ -1,4 +1,5 @@
 import { Duration } from "aws-cdk-lib";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
 import * as logs from "aws-cdk-lib/aws-logs";
@@ -14,10 +15,13 @@ export interface LambdaConstructProps {
   handler?: string;
   memorySize?: number;
   runtime?: lambda.Runtime;
+  securityGroups?: ec2.ISecurityGroup[];
   timeout?: Duration;
   api?: RestApi;
   apiResource?: string;
   apiMethod?: string;
+  vpc?: ec2.IVpc;
+  vpcSubnets?: ec2.SubnetSelection;
 }
 
 export class LambdaConstruct extends Construct {
@@ -41,7 +45,10 @@ export class LambdaConstruct extends Construct {
       environment: props.environment,
       logGroup: functionLogGroup,
       memorySize: props.memorySize ?? 256,
+      securityGroups: props.securityGroups,
       timeout: props.timeout ?? Duration.seconds(30),
+      vpc: props.vpc,
+      vpcSubnets: props.vpcSubnets,
     });
 
     new cdk.CfnOutput(this, `${id}-functionName`, {

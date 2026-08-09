@@ -22,10 +22,17 @@ const dinosaurInformationServiceStack = new DinosaurInformationServiceStack(
   "DinosaurInformationServiceStack",
   stackProps,
 );
-const expressProxyStack = new ExpressProxyStack(
-  app,
-  "ExpressProxyStack",
-  stackProps,
-);
+const expressProxyStack = new ExpressProxyStack(app, "ExpressProxyStack", {
+  ...stackProps,
+  databaseHost:
+    dinosaurInformationServiceStack.mysqlPrimaryInstance
+      .dbInstanceEndpointAddress,
+  databaseName: dinosaurInformationServiceStack.databaseName,
+  databaseReadHost:
+    dinosaurInformationServiceStack.mysqlReadReplica.dbInstanceEndpointAddress,
+  databaseSecret: dinosaurInformationServiceStack.databaseSecret,
+  databaseSecurityGroup: dinosaurInformationServiceStack.databaseSecurityGroup,
+  vpc: dinosaurInformationServiceStack.vpc,
+});
 
 expressProxyStack.addStackDependency(dinosaurInformationServiceStack);

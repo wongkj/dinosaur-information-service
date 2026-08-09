@@ -1,5 +1,6 @@
 import serverlessExpress from "@codegenie/serverless-express";
 import express, { type Request, type Response } from "express";
+import { verifyDatabaseConnection } from "../db/drizzle";
 
 const app = express();
 
@@ -21,6 +22,18 @@ app.get("/good-bye-world", (_request: Request, response: Response) => {
   response.json({
     status: "ok",
     message: "Goodbye World!",
+  });
+});
+
+app.get("/db-health", async (request: Request, response: Response) => {
+  const requestedTarget = request.query.target;
+  const target = requestedTarget === "read" ? "read" : "primary";
+
+  const connection = await verifyDatabaseConnection(target);
+
+  response.json({
+    status: "ok",
+    ...connection,
   });
 });
 
