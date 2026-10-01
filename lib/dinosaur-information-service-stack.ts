@@ -2,9 +2,7 @@ import * as path from "node:path";
 import * as cdk from "aws-cdk-lib";
 import { LambdaIntegration } from "aws-cdk-lib/aws-apigateway";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import * as iam from "aws-cdk-lib/aws-iam";
 import * as rds from "aws-cdk-lib/aws-rds";
-import * as scheduler from "aws-cdk-lib/aws-scheduler";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { Construct } from "constructs";
@@ -23,9 +21,6 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const dinosaurInformationScheduleExpression = String(
-      process.env.DINO_INFO_SCHEDULE ?? "cron(30 5 * * ? *)",
-    );
     const stage = String(process.env.STAGE ?? "dev").toLowerCase();
     const dinosaurDataBucketBaseName = String(
       process.env.DINO_DATA_BUCKET ?? "dino-data",
@@ -187,32 +182,7 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
       new LambdaIntegration(helloWorldLambda),
     );
 
-    const dinosaurInformationScheduleRole = new iam.Role(
-      this,
-      "dinosaur-information-schedule-role",
-      {
-        assumedBy: new iam.ServicePrincipal("scheduler.amazonaws.com"),
-      },
-    );
-
-    dinosaurInformationLambda.grantInvoke(dinosaurInformationScheduleRole);
     dinosaurDataBucket.grantReadWrite(dinosaurInformationLambda);
-
-    const dinosaurInformationSchedule = new scheduler.CfnSchedule(
-      this,
-      "dinosaur-information-daily-schedule",
-      {
-        flexibleTimeWindow: {
-          mode: "OFF",
-        },
-        scheduleExpression: dinosaurInformationScheduleExpression,
-        scheduleExpressionTimezone: "Australia/Melbourne",
-        target: {
-          arn: dinosaurInformationLambda.functionArn,
-          roleArn: dinosaurInformationScheduleRole.roleArn,
-        },
-      },
-    );
 
     new cdk.CfnOutput(this, "HelloWorldLambdaName", {
       value: helloWorldLambda.functionName,
@@ -228,12 +198,6 @@ export class DinosaurInformationServiceStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "DinosaurInformationLambdaArn", {
       value: dinosaurInformationLambda.functionArn,
-    });
-
-    new cdk.CfnOutput(this, "DinosaurInformationScheduleName", {
-      value:
-        dinosaurInformationSchedule.name ??
-        "dinosaur-information-daily-schedule",
     });
 
     new cdk.CfnOutput(this, "DinosaurDataBucketName", {
